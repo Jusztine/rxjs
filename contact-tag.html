@@ -1,0 +1,84 @@
+<div class="mb-5 mt-1 relative" *ngIf="!skeleton; else skeletonTmpl">
+  <span class="text-gray text-sm">Tags</span>
+  <form class="grow" (ngSubmit)="addContactTag()" autocomplete="off">
+    <mat-form-field class="w-full" data-test="contactTag">
+      <input
+        matInput
+        type="text"
+        autocomplete="off"
+        placeholder="Hit enter to create a new tag"
+        [formControl]="searchControl"
+        [matAutocomplete]="auto"
+        [upsLibPrefillInputOption]="filteredOptions$ | async"
+        [currentValue]="searchControl.getRawValue()"
+      />
+      <mat-autocomplete #auto="matAutocomplete">
+        <mat-option
+          *ngFor="let option of filteredOptions$ | async"
+          [value]="option.value"
+          class="search--input-option"
+        >
+          <span [innerHTML]="option.label"></span>
+        </mat-option>
+      </mat-autocomplete>
+    </mat-form-field>
+  </form>
+  <ng-container *ngFor="let tag of contactTags; let i = index">
+    <div
+      class="inline-flex items-center border-2 border-transparent rounded-full pl-4 py-1 m-2 bg-blue-500"
+      [ngClass]="{
+        '!bg-red-600 !text-red-600': tagColors[tag] === '#ff0000',
+        '!bg-orange-500 !text-orange-500': tagColors[tag] === '#FFA500',
+        '!bg-yellow-500 !text-yellow-500': tagColors[tag] === '#FFFF00',
+        '!bg-green-500 !text-green-500': tagColors[tag] === '#00FF00',
+        '!bg-blue-500 !text-blue-500': tagColors[tag] === '#0000FF',
+        '!bg-purple-500 !text-purple-500': tagColors[tag] === '#800080'
+      }"
+    >
+      <mat-icon
+        mat-icon-button
+        [matMenuTriggerFor]="menu"
+        class="h-10 mt-1 text-sm align-middle text-white cursor-pointer"
+        >more_vert</mat-icon
+      >
+      <span class="text-white flex items-center justify-center text-base"
+        >{{ tag }}
+      </span>
+
+      <mat-icon
+        class="text-slate-300 cursor-pointer ml-2 text-base"
+        (click)="removeContactTag(tag)"
+        data-test="delete-tag"
+        >cancel</mat-icon
+      >
+    </div>
+    <mat-menu #menu="matMenu" class="py-4 w-48">
+      <span class="text-slate-500 p-4">Colors</span>
+      <button
+        mat-menu-item
+        *ngFor="let color of colorOptions"
+        (click)="setSelectedOption(tag, color.value)"
+        class="flex justify-center"
+      >
+        <div class="flex justify-center align-middle items-center w-full">
+          <span
+            class="inline-block w-3 h-3 mr-4 text-base"
+            [style.background-color]="color.value"
+          ></span>
+
+          <span>
+            {{ color.label | titlecase }}
+          </span>
+        </div>
+      </button>
+    </mat-menu>
+  </ng-container>
+</div>
+
+<ng-template class="mt-10" #skeletonTmpl>
+  <ups-lib-skeleton-text
+    [lines]="1"
+    [minLineWidth]="100"
+    [maxLineWidth]="180"
+  ></ups-lib-skeleton-text>
+</ng-template>
