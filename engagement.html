@@ -1,0 +1,321 @@
+<table
+  mat-table
+  #table
+  [dataSource]="dataSource"
+  [trackBy]="trackById"
+  data-test="engagement-traffic-history-table"
+  class="uptape-table"
+  aria-describedby="logHistoryDesc"
+>
+  <!--  Salesperson Column  -->
+  <ng-container matColumnDef="salesperson">
+    <th
+      mat-header-cell
+      *matHeaderCellDef
+      class="uptape-table__header"
+      id="salesperson"
+    >
+      Salesperson
+    </th>
+    <td
+      mat-cell
+      *matCellDef="let element"
+      data-test="engagement-traffic-history-table__salesperson"
+      class="uptape-table-row"
+    >
+      <div class="engagement-traffic-history__salesperson-cell">
+        <h4 data-test="engagement-traffic-history__salesperson-title">
+          {{ element.title }}
+        </h4>
+        <div
+          *ngIf="element.flag && element.flagText"
+          [matTooltip]="element.flagText"
+        >
+          <mat-icon>flag</mat-icon>
+        </div>
+      </div>
+    </td>
+  </ng-container>
+
+  <!-- Traffic Type Column -->
+  <ng-container matColumnDef="trafficType">
+    <th
+      mat-header-cell
+      *matHeaderCellDef
+      class="uptape-table__header uptape-table__header--with-left-border"
+    >
+      <ng-container *ngIf="!skeleton; else skeletonTmpl">
+        Traffic Type
+      </ng-container>
+    </th>
+    <td
+      mat-cell
+      *matCellDef="let element"
+      data-test="engagement-traffic-history-table__traffic-type"
+      class="uptape-table-row uptape-table-row--with-left-border"
+    >
+      <span>{{
+        (element.unused && element.skipReason) || element.trafficType
+      }}</span>
+    </td>
+  </ng-container>
+
+  <!-- Contact Name Column -->
+  <ng-container matColumnDef="contactName">
+    <th
+      mat-header-cell
+      *matHeaderCellDef
+      id="contactName"
+      class="uptape-table__header uptape-table__header--with-left-border uptape-table__header--with-badge"
+    >
+      <ng-container *ngIf="!skeleton; else skeletonTmpl"
+        >Contact Name</ng-container
+      >
+    </th>
+    <td
+      mat-cell
+      *matCellDef="let element"
+      data-test="uptape-table-row--contact-name"
+      class="uptape-table-row uptape-table-row--with-left-border uptape-table-row--contact-name"
+      [ngClass]="{ 'has-text-input': !element.contactName && !element.unused }"
+    >
+      <div class="name-container flex flex-row">
+        <span class="basis-3/4">
+          <ng-container
+            *ngIf="
+              !element.unused &&
+                element.contactName &&
+                element.contactName.toLowerCase() != 'no info' &&
+                crmEnabled;
+              else noLinkContact
+            "
+          >
+            <a
+              class="uptape-table-row--contact-name-link"
+              [routerLink]="'/crm/contact/' + element.contactId"
+              [queryParams]="{ assignedTo: element.assignedTo }"
+            >
+              {{ element.contactName }}
+            </a>
+          </ng-container>
+          <ng-template #noLinkContact>
+            {{ element.unused ? "Turn Skipped" : element.contactName }}
+          </ng-template>
+        </span>
+        <ups-lib-prospect-rating
+          *ngIf="
+            !element.unused &&
+            element.contactName &&
+            element.contactName.toLowerCase() != 'no info' &&
+            crmEnabled
+          "
+          (toggleSelection)="
+            handleToggleQualification(
+              $event,
+              element.claimId,
+              element.contactId
+            )
+          "
+          [rating]="element.qualification"
+        ></ups-lib-prospect-rating>
+      </div>
+      <div
+        *ngIf="!element.unused && !element.contactName"
+        class="uptape-table__single-item-form"
+        [ngClass]="{ 'has-text-input': contactName.value }"
+      >
+        <form (ngSubmit)="handleContact(contactName.value, element)">
+          <mat-form-field appearance="outline" class="-mb-5 -mt-4 w-full">
+            <div class="flex justify-center items-center">
+              <input
+                matInput
+                data-test="up-log-history-table__contact-name-form-field"
+                placeholder="Add a contact name"
+                name="contactName"
+                [id]="element.id"
+                [value]="element.contactName"
+                type="text"
+                #contactName
+                [matAutocomplete]="auto"
+                [currentValue]="contactName"
+                (input)="stateInputChange$.next(contactName.value)"
+                (focus)="onInputFocus(contactName.value)"
+              />
+
+              <mat-autocomplete
+                #auto="matAutocomplete"
+                (optionSelected)="autoCompleteSelected($event)"
+                [displayWith]="displayOptionValue"
+              >
+                <mat-option
+                  *ngFor="let option of filteredContactNameOps"
+                  [value]="option"
+                >
+                  <span [innerHTML]="option.label"></span>
+                </mat-option>
+              </mat-autocomplete>
+              <button
+                matSuffix
+                type="submit"
+                data-test="up-log-history-table__contact-form-submit"
+                *ngIf="contactName.value"
+                class="save-contact"
+                matTooltip="Save customer name"
+                class="px-3 text-blue-400"
+              >
+                <mat-icon>save_alt</mat-icon>
+              </button>
+            </div>
+          </mat-form-field>
+        </form>
+      </div>
+    </td>
+  </ng-container>
+
+  <!-- Notes Column -->
+  <ng-container matColumnDef="notes">
+    <th
+      mat-header-cell
+      *matHeaderCellDef
+      class="uptape-table__header uptape-table__header--with-left-border"
+    >
+      <ng-container *ngIf="!skeleton; else skeletonTmpl"> Notes </ng-container>
+    </th>
+    <td
+      mat-cell
+      *matCellDef="let element"
+      class="uptape-table-row uptape-table-row--with-left-border"
+    >
+      <span>{{
+        (!element.contactName && element.skipReason) || element.notes
+      }}</span>
+      <div
+        *ngIf="
+          !element.unused &&
+          !(
+            !element.skipReason &&
+            (!element.contactName ||
+              (element.contactName | lowercase) == 'no info')
+          ) &&
+          !element.notes
+        "
+        class="uptape-table__single-item-form"
+        [ngClass]="{ 'has-text-input': notes.value }"
+      >
+        <form
+          #notesForm="ngForm"
+          (ngSubmit)="
+            handleNotes(notes.value, element.contactId, element.claimId)
+          "
+        >
+          <mat-form-field appearance="outline" class="-mb-5 -mt-4 w-full">
+            <div class="flex justify-center items-center">
+              <input
+                sss
+                matInput
+                data-test="up-log-history-table__note-form-field"
+                placeholder="Add a note"
+                name="notes"
+                [value]="element.notes"
+                type="text"
+                #notes
+              />
+
+              <button
+                matSuffix
+                type="submit"
+                data-test="up-log-history-table__note-form-submit"
+                *ngIf="notes.value"
+                class="save-notes"
+                matTooltip="Save note"
+                class="px-3 text-blue-400"
+              >
+                <mat-icon>save_alt</mat-icon>
+              </button>
+            </div>
+          </mat-form-field>
+        </form>
+      </div>
+    </td>
+  </ng-container>
+
+  <!-- Time Column -->
+  <ng-container matColumnDef="time">
+    <th
+      mat-header-cell
+      *matHeaderCellDef
+      class="uptape-table__header uptape-table__header--with-left-border"
+    >
+      <ng-container *ngIf="!skeleton; else skeletonTmpl"> Time </ng-container>
+    </th>
+    <td
+      mat-cell
+      *matCellDef="let element"
+      data-test="engagement-traffic-history-table__time"
+      class="uptape-table-row uptape-table-row--half-width uptape-table-row--with-left-border"
+    >
+      <span>{{ (element.unused && element.skipReason) || element.time }}</span>
+    </td>
+  </ng-container>
+
+  <!-- Duration Column -->
+  <ng-container matColumnDef="duration">
+    <th
+      mat-header-cell
+      *matHeaderCellDef
+      class="uptape-table__header--with-left-border"
+    >
+      <ng-container *ngIf="!skeleton; else skeletonTmpl">
+        Duration
+      </ng-container>
+    </th>
+    <td
+      mat-cell
+      *matCellDef="let element"
+      data-test="engagement-traffic-history-table__duration"
+      class="uptape-table-row uptape-table-row--with-left-border"
+    >
+      <span>{{
+        (element.unused && element.skipReason) || element.duration
+      }}</span>
+    </td>
+  </ng-container>
+
+  <tr mat-header-row *matHeaderRowDef="displayedColumns; sticky: true"></tr>
+  <tr
+    mat-row
+    *matRowDef="let row; columns: displayedColumns"
+    data-test="engagement-traffic-history-line-item"
+    class="uptape-table__line-item"
+  ></tr>
+
+  <!-- Group header -->
+  <ng-container matColumnDef="groupHeader">
+    <td
+      colspan="999"
+      mat-cell
+      *matCellDef="let groupBy"
+      data-test="engagement-traffic-history-table__date-row"
+      class="uptape-table__date-row"
+    >
+      <ng-container *ngIf="!skeleton; else skeletonTmpl">
+        {{ groupBy.date | date }}
+      </ng-container>
+    </td>
+  </ng-container>
+
+  <tr
+    mat-row
+    *matRowDef="let row; columns: ['groupHeader']; when: isGroup"
+    data-test="engagement-traffic-history-group-header"
+    style="position: sticky; top: 56px"
+  ></tr>
+</table>
+
+<ng-template #skeletonTmpl>
+  <ups-lib-skeleton-text
+    [lines]="1"
+    [maxLineWidth]="100"
+    [minLineWidth]="50"
+  ></ups-lib-skeleton-text>
+</ng-template>
