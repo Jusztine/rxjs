@@ -38,9 +38,7 @@ export class EngagementTrafficHistoryComponent
   constructor(
     private typeAheadContact: TypeaheadContactNameUsecase,
     private cdr: ChangeDetectorRef
-  ) {
-    this.tests = [];
-  }
+  ) {}
 
   @Input() dataSource!: UpEngagementHistoryModel[];
 
@@ -49,8 +47,6 @@ export class EngagementTrafficHistoryComponent
   @Input() crmEnabled = false;
 
   @ViewChild('contactName') contactName: ElementRef;
-
-  @ViewChild('divElement') formElement: ElementRef;
 
   public stateInputChange$: Subject<string> = new Subject<string>();
 
@@ -82,13 +78,12 @@ export class EngagementTrafficHistoryComponent
     'duration',
   ];
 
-  //chagnes
-  selectedContactIndex;
-
-  tests: any[] = [];
-
   source: string = 'EngagementLog';
   selectedContactId: string;
+  selectedContactIds: string[] = [];
+  selectedContactName: string;
+
+  contactValue: string;
 
   ngAfterViewInit() {
     this.stateInputChange$
@@ -96,7 +91,7 @@ export class EngagementTrafficHistoryComponent
         startWith(''),
         debounceTime(250),
         concatMap((value) => {
-          if (!value) {
+          if (value) {
             this.resetSelectedContactId();
           }
 
@@ -111,10 +106,6 @@ export class EngagementTrafficHistoryComponent
       .subscribe((res) => {
         this.filteredContactNameOps = res;
         this.cdr.detectChanges();
-
-        if (!this.contactName.nativeElement.value.trim()) {
-          this.resetSelectedContactId();
-        }
       });
   }
 
@@ -134,11 +125,11 @@ export class EngagementTrafficHistoryComponent
     return item.id || index;
   };
 
-  onInputFocus(value: string) {
-    if (value.trim() === '') {
-      this.resetSelectedContactId();
-    }
-  }
+  // onInputFocus(value: string) {
+  //   if (value.trim() === '') {
+  //     this.resetSelectedContactId();
+  //   }
+  // }
 
   @Output() submitContactPerson = new EventEmitter<{
     data: {
@@ -195,34 +186,33 @@ export class EngagementTrafficHistoryComponent
   }
 
   resetSelectedContactId() {
+    // this.selectedContactIds[index] = null;
     this.selectedContactId = null;
   }
 
-  autoCompleteSelected($event: MatAutocompleteSelectedEvent) {
+  autoCompleteSelected($event: MatAutocompleteSelectedEvent, index: number) {
     const selectedOption = $event.option.value;
     const contactId = selectedOption.contactId;
     this.selectedContactId = contactId;
+    this.selectedContactName = selectedOption.value;
 
-    this.selectedContactIndex = this.filteredContactNameOps.findIndex(
-      (option) => option.contactId === contactId
-    );
+    console.log('select name', this.selectedContactName);
 
-    this.tests.push(this.selectedContactId);
-
-    const array = this.tests.map((item, index) => ({ [index]: item }));
-
-    console.log(array);
-
-    const idValue = this.contactName.nativeElement.getAttribute('id');
-    console.log('ID Value:', idValue);
+    this.selectedContactIds[index] = this.selectedContactId;
   }
 
   displayOptionValue(option: any): string {
     return option ? option.value : '';
   }
 
-  handleContact(contactName: string, element: UpHistoryModel) {
+  handleContact(contactName: string, element: UpHistoryModel, index: number) {
     const { assignedTo, claimId, upTapeId, touchId } = element;
+
+    console.log(this.contactValue);
+
+    if (this.selectedContactName !== contactName) {
+      this.resetSelectedContactId();
+    }
 
     const names = contactName.trim().split(' ');
     const data: {
@@ -245,17 +235,20 @@ export class EngagementTrafficHistoryComponent
       claimId,
       touchId,
       upTapeId,
-      contactId: undefined,
+      contactId: this.selectedContactIds[index],
     };
 
-    if (this.selectedContactId) {
-      data.contactId = this.selectedContactId;
+    console.log(this.selectedContactIds);
+
+    if (this.selectedContactIds[index]) {
       data.touchId = touchId;
-      console.log(data.contactId);
+
+      console.log('data passed', data);
 
       // this.submitContactFromTheList.emit({ data, upTapeId });
     } else {
-      console.log('newId');
+      console.log('new id');
+      console.log(data);
 
       // this.submitContactPerson.emit({ data, upTapeId });
     }
