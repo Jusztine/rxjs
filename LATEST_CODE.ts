@@ -535,3 +535,28 @@ response
 
 
 
+
+
+function  buildQueryString(params: { [key: string]: string | number | boolean }): string {
+    const queryString = Object.entries(params)
+      .map(([key, value]) => {
+        if (Array.isArray(value)) {
+          // Handle array values, e.g., accessTags[location]=SF&accessTags[location]=FV
+          return value.map(item => `${encodeURIComponent(key)}=${encodeURIComponent(item)}`).join('&');
+        } else {
+          // Handle non-array values
+          return `${encodeURIComponent(key)}=${encodeURIComponent(value.toString())}`;
+        }
+      })
+      .join('&');
+
+    return queryString;
+  }
+
+const filterObject = {
+    "department[test]": "HV"
+};
+
+console.log('test', buildQueryString(filterObject))
+
+
