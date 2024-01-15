@@ -1,0 +1,158 @@
+<!-- <div class="border-l-8 border-solid border-yellow-400 pl-3">tetsetset</div> -->
+
+<div class="flex mat-elevation-z1 rounded !p-4 mb-4 border-l-8 border-solid">
+  <span
+    class="border-solid border-l-8"
+    data-test="search-result-item"
+    [class.border-gray]="!result.rowColor"
+    [class.border-primary]="result.rowColor === 'primary'"
+    [class.border-warning]="result.rowColor === 'warning'"
+    [class.border-alert]="result.rowColor === 'alert'"
+    [matTooltip]="'test'"
+    [matTooltipPosition]="'left'"
+  >
+  </span>
+
+  <div
+    class="flex flex-col gap-2"
+    [ngClass]="{
+      'bg-gray-200 dark:bg-gray-900':
+        !result.statuses || result.statuses.length === 0,
+      'bg-white dark:bg-gray-950': result.statuses?.length > 0
+    }"
+  >
+    <!--    Due to call area      -->
+    <div class="flex gap-2 items-center">
+      <p
+        *ngFor="let status of result.statuses"
+        class="flex items-center gap-1 text-sm"
+        [class.text-gray]="!status.color"
+        [class.text-alert]="status.color === 'alert'"
+        [class.text-primary]="status.color === 'primary'"
+      >
+        <mat-icon *ngIf="status.icon">{{ status.icon }}</mat-icon>
+        <ng-container *ngIf="status.label">{{ status.label }}: </ng-container
+        >{{ status.value }}
+      </p>
+      <p
+        *ngIf="!result.statuses || result.statuses.length === 0"
+        class="text-sm"
+        style="color: rgb(158, 158, 158); opacity: 1"
+      >
+        No Follow-Up Scheduled
+      </p>
+    </div>
+    <!--    Main content      -->
+    <div class="flex gap-2 items-center">
+      <ups-lib-user-picture
+        class="cursor-pointer"
+        [fullName]="result.title"
+        (click)="itemClick.emit(result)"
+      ></ups-lib-user-picture>
+      <div class="flex flex-col grow gap-2">
+        <h3
+          data-test="search-result-title"
+          class="text-2xl cursor-pointer hover:underline text-primary dark:text-primary-100"
+          [style.color]="
+            !result.statuses || result.statuses.length === 0
+              ? 'rgb(158, 158, 158)'
+              : ''
+          "
+          [style.opacity]="
+            !result.statuses || result.statuses.length === 0 ? 1 : ''
+          "
+          (click)="itemClick.emit(result)"
+        >
+          {{ result.title }}
+        </h3>
+
+        <p
+          *ngIf="result.subTitle"
+          class="font-light dark:text-gray-50"
+          [style.color]="
+            !result.statuses || result.statuses.length === 0
+              ? 'rgb(158, 158, 158)'
+              : ''
+          "
+        >
+          {{ result.subTitle }}
+        </p>
+        <p
+          *ngFor="let line of result.lines; let i = index"
+          class="font-light"
+          [innerHTML]="line"
+        ></p>
+        <div
+          *ngFor="let line of result.fields; let i = index"
+          class="font-light"
+        >
+          <p
+            class="whitespace-normal"
+            [innerHTML]="
+              '<b>' +
+              line.label +
+              ':</b> ' +
+              line.value +
+              (!!line.date ? (line.date | date) : '')
+            "
+          ></p>
+        </div>
+      </div>
+      <ups-lib-prospect-rating
+        class="mr-0"
+        [size]="'lg'"
+        [rating]="result.qualificationStatus"
+        (toggleSelection)="rateResult.emit({ result, rating: $event.rating, toggleValue: $event.toggleValue })"
+      ></ups-lib-prospect-rating>
+    </div>
+    <div class="flex items-center gap-2">
+      <div class="flex">
+        <ng-container *ngFor="let action of result.iconActions">
+          <button
+            disabled
+            class="!text-gray"
+            mat-icon-button
+            [matMenuTriggerFor]="menu"
+            [attr.aria-label]="action.label"
+          >
+            <mat-icon>{{ action.icon }}</mat-icon>
+          </button>
+          <mat-menu #menu="matMenu" yPosition="above">
+            <button
+              mat-menu-item
+              *ngFor="let button of action.menuItems"
+              (click)="
+                iconActionClick.emit({
+                  result: result,
+                  action: action.action,
+                  value: button.value
+                })
+              "
+            >
+              <span>{{ button.label }}: {{ button.value }}</span>
+            </button>
+          </mat-menu>
+        </ng-container>
+      </div>
+      <div class="grow">
+        <mat-chip-listbox
+          *ngIf="result.tags && result.tags.length"
+          class="search-results--title--status"
+        >
+          <mat-chip-option
+            *ngFor="let tag of result.tags"
+            [color]="tag.color || null"
+            [selected]="!!tag.color"
+            selectable="false"
+            >{{ tag.label }}</mat-chip-option
+          >
+        </mat-chip-listbox>
+      </div>
+      <div class="mr-0 ml-auto" *ngIf="resultActionTmpl">
+        <ng-container
+          *ngTemplateOutlet="resultActionTmpl; context: { $implicit: result }"
+        ></ng-container>
+      </div>
+    </div>
+  </div>
+</div>
