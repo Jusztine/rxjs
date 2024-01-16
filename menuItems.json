@@ -1,0 +1,113 @@
+returned data menuItems
+[
+  {
+    "label": "Contacts",
+    "children": [
+      {
+        "label": "Search",
+        "icon": "search",
+        "routerLink": [
+          "crm",
+          "search"
+        ],
+        "hideTitle": true,
+        "hasFilters": false
+      },
+      {
+        "label": "Appointments",
+        "icon": "event",
+        "routerLink": [
+          "crm",
+          "calendar"
+        ],
+        "hasFilters": true
+      }
+    ]
+  },
+  {
+    "label": "Daily Followup",
+    "children": [
+      {
+        "label": "Today's Top 10",
+        "icon": "adjust",
+        "routerLink": [
+          "crm",
+          "focused-followup"
+        ],
+        "hideTitle": true,
+        "hasFilters": true
+      },
+      {
+        "label": "Due To Call",
+        "icon": "perm_phone_msg",
+        "routerLink": [
+          "crm",
+          "due-to-call"
+        ],
+        "hideTitle": true,
+        "hasFilters": true
+      },
+      {
+        "label": "Unworked Prospects",
+        "icon": "contact_mail",
+        "routerLink": [
+          "crm",
+          "unworked"
+        ],
+        "hideTitle": true,
+        "hasFilters": true
+      }
+    ]
+  },
+  {
+    "label": "Activity Logs",
+    "children": [
+      {
+        "label": "Follow-up Log",
+        "icon": "view_list",
+        "routerLink": [
+          "crm",
+          "follow-up"
+        ],
+        "hasFilters": true
+      },
+      {
+        "label": "Prospecting Log",
+        "icon": "person_add",
+        "routerLink": [
+          "crm",
+          "prospecting"
+        ],
+        "hasFilters": true
+      }
+    ]
+  },
+  {
+    "label": "Reports",
+    "children": [
+      {
+        "label": "Late Follow-up",
+        "icon": "assignment_late",
+        "routerLink": [
+          "crm",
+          "late-follow-up"
+        ],
+        "hasFilters": false
+      },
+      {
+        "label": "Follow-up Comparison",
+        "icon": "connect_without_contact",
+        "routerLink": [
+          "crm",
+          "comparison",
+          "follow-up"
+        ],
+        "hasFilters": true
+      }
+    ]
+  }
+]
+
+
+//
+show only the badge for Appointments, Focused Followup, Due to Call, Unworked Prospects, Late Followup
