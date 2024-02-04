@@ -1,0 +1,12 @@
+::ng-deep .mdc-slider .mdc-slider__value-indicator-container  {
+  position: absolute;
+  transform: rotate(180deg) !important;
+  bottom: -35px !important;
+  left: -14px !important;
+  
+}
+
+::ng-deep .mdc-slider__value-indicator-text {
+  transform: rotate(180deg) !important;
+
+ }
