@@ -576,3 +576,196 @@ export interface RecentCallParams {
   getRecentCalls(
     recentCallsParams: RecentCallParams
   ): Observable<RecentCallResponse>;
+
+
+  
+  @if(skeleton) {
+    <ul>
+      @for (item of skeletonItems; track $index) {
+      <li
+        class="flex gap-4 p-2 w-full border-solid border-b border-gray-200 dark:border-gray-950"
+      >
+        <ups-lib-skeleton-text
+          class="grow"
+          lines="1"
+          [maxLineWidth]="280"
+          [minLineWidth]="150"
+        ></ups-lib-skeleton-text>
+      </li>
+      }
+    </ul>
+  
+  
+    } @else if(recentCalls && recentCalls.length) {
+      <mat-tab-group class="p-3">
+        <cdk-virtual-scroll-viewport [itemSize]="20">
+       
+       
+          <mat-tab label="All">
+     
+  
+            @for(recentCall of recentCalls; track recentCall.callSid) {
+           
+            <div class="flex p-4 pt-0 items-center">
+              <div class="mr-4">
+                <mat-icon
+                  [ngClass]="{
+                    'text-red-500': recentCall.direction === 'missed',
+                    'text-blue-500': recentCall.direction === 'incoming',
+                    'text-green-500': recentCall.direction === 'outgoing'
+                  }"
+                >
+                  <ng-container
+                    *ngIf="recentCall.direction === 'missed'; else otherIcons"
+                    >phone_missed</ng-container
+                  >
+                  <ng-template #otherIcons>
+                    <ng-container
+                      *ngIf="recentCall.direction === 'incoming'; else outgoingIcon"
+                      >phone_callback</ng-container
+                    >
+                    <ng-template #outgoingIcon>
+                      <ng-container
+                        *ngIf="
+                          recentCall.direction === 'outgoing';
+                          else defaultIcon
+                        "
+                        >phone_forwarded</ng-container
+                      >
+                    </ng-template>
+                  </ng-template>
+                </mat-icon>
+              </div>
+    
+              <div class="flex-grow mt-5">
+                <div class="flex items-center justify-between">
+                  <span>
+                    <button
+                      [disabled]="callOngoing"
+                      class="font-bold cursor-pointer"
+                      (click)="
+                        onCallClick(recentCall.label, recentCall.assignedTo);
+                        updateSelectedCallSid(recentCall.callSid)
+                      "
+                    >
+                      {{ recentCall.label }}
+                    </button>
+                    <p class="text-sm text-gray-500">mobile</p>
+                  </span>
+    
+                  <span class="text-right ml-4">
+                    <p class="font-bold">
+                      {{ recentCall.calledAt | date : "shortDate" }}
+                    </p>
+                    <p class="text-sm text-gray-500">
+                      {{ recentCall.calledAt | date : "shortTime" }}
+                    </p>
+                  </span>
+                </div>
+              </div>
+    
+              <div class="ml-4">
+                <mat-icon class="text-blue-500">info</mat-icon>
+              </div>
+            </div>
+            <div class="flex-grow border-b border-gray-400"></div>
+         
+    
+            <div *ngIf="selectedCallSid === recentCall.callSid">
+              <ups-phone-recent-calls-dialpad
+                [callStatus]="callStatus.status"
+                [muted]="muted"
+                [timeOnCall]="timeOnCall"
+                (mute)="mute($event)"
+                (hangUp)="hangUp($event)"
+              ></ups-phone-recent-calls-dialpad>
+            </div>
+    
+            }
+            <div>
+              <div
+                inViewport
+                [inViewportOptions]="{ threshold: [0] }"
+                (inViewportAction)="loadMore($event)"
+              >
+                <!-- <mat-spinner [diameter]="50" *ngIf="loadingMore"></mat-spinner> -->
+              </div>
+            </div>
+          </mat-tab>
+        </cdk-virtual-scroll-viewport>
+    
+        <mat-tab label="Missed">
+          <div class="flex flex-col items-center">
+            <ng-container
+              *ngIf="getMissedCalls().length === 0; else missedCallsBlock"
+            >
+              <ups-phone-empty-message
+                [icon]="'phone_missed'"
+                [message]="'No Missed Calls'"
+                [iconColor]="'text-red-500'"
+              >
+              </ups-phone-empty-message>
+            </ng-container>
+            <ng-template #missedCallsBlock>
+              <div class="flex flex-col items-center">
+                <div
+                  *ngFor="let recentCall of getMissedCalls(); trackBy: trackByFn"
+                  class="call-block"
+                >
+                  <div class="flex p-4 pt-0 items-center">
+                    <div class="mr-4">
+                      <mat-icon class="text-red-500">phone_missed</mat-icon>
+                    </div>
+                    <div class="flex-grow mt-5">
+                      <div class="flex items-center justify-between">
+                        <span>
+                          <button
+                            [disabled]="callOngoing"
+                            class="font-bold cursor-pointer text-red-500"
+                            (click)="
+                              onCallClick(recentCall.label, recentCall.assignedTo);
+                              updateSelectedCallSid(recentCall.callSid)
+                            "
+                          >
+                            {{ recentCall.label }}
+                          </button>
+                          <p class="text-sm text-gray-500">mobile</p>
+                        </span>
+                        <span class="text-right ml-4">
+                          <p class="font-bold">
+                            {{ recentCall.calledAt | date : "shortDate" }}
+                          </p>
+                          <p class="text-sm text-gray-500">
+                            {{ recentCall.calledAt | date : "shortTime" }}
+                          </p>
+                        </span>
+                      </div>
+                    </div>
+                    <div class="ml-4">
+                      <mat-icon class="text-blue-500">info</mat-icon>
+                    </div>
+                  </div>
+                  <div class="border-b border-gray-400"></div>
+    
+                  <div *ngIf="selectedCallSid === recentCall.callSid">
+                    <ups-phone-recent-calls-dialpad
+                      [callStatus]="callStatus.status"
+                      [muted]="muted"
+                      [timeOnCall]="timeOnCall"
+                      (mute)="mute($event)"
+                      (hangUp)="hangUp($event)"
+                    ></ups-phone-recent-calls-dialpad>
+                  </div>
+                </div>
+              </div>
+            </ng-template>
+          </div>
+        </mat-tab>
+      </mat-tab-group>
+  
+    } @else {
+    <ups-phone-empty-message [icon]="'call'" [message]="'No Recent Calls'">
+    </ups-phone-empty-message>
+    }
+  
+  
