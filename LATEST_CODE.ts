@@ -560,3 +560,101 @@ const filterObject = {
 console.log('test', buildQueryString(filterObject))
 
 
+
+///latest
+<!-- <div
+  upsLibSaCustomToolTip
+  [contentTemplate]="leadTemplate"
+  [templatePosition]="tooltipposition"
+  [keepOpen]="keepTooltipOpen"
+  (mouseenter)="onTooltipShow()"
+  (mouseleave)="onTooltipHide()"
+  class="flex items-center justify-center"
+>
+  <mat-icon
+    class="text-3xl !w-8 !h-8"
+    [matBadge]="
+      inboundQueue && inboundQueue.length ? inboundQueue.length : null
+    "
+    matBadgeColor="warn"
+  >
+    inbox
+  </mat-icon>
+</div>
+
+<ng-template #leadTemplate>
+  <div
+    class="bg-white border border-gray-400 rounded min-w-xl shadow-lg relative w-full h-96 overflow-y-auto tooltip-content"
+  >
+    <div class="absolute -top-3 right-6 w-4 overflow-hidden inline-block">
+      <div
+        class="h-3 w-3 bg-white border-l border-t border-gray-400 transform rotate-45 origin-bottom-left"
+      ></div>
+    </div>
+    <ul>
+      <li
+        *ngFor="let item of inboundQueue"
+        class="p-4 even:bg-gray-100 border-b border-gray-400 last:border-0 first:rounded-t last:rounded-b"
+      >
+        <p class="text-xl font-bold">{{ item.sourceFrom | obscureEmail }}</p>
+
+        <ng-container *ngIf="item.groupName; else noGroupName">
+          <div class="flex justify-between">
+            <p class="text-sm text-gray-600">Group: {{ item.groupName }}</p>
+
+            <button
+              *ngIf="checkRole"
+              type="button"
+              class="cursor-pointer text-xs text-accent flex items-center focus:outline-primary focus:outline-offset-1 focus:outline"
+              (click)="subtitleClick.emit(item)"
+            >
+              <mat-icon
+                class="text-sm !flex items-center justify-center !w-4 !h-4"
+                >visibility</mat-icon
+              >
+              View Details
+            </button>
+          </div>
+          <p class="text-sm text-gray-600 italic">
+            Added: {{ item.addedAt | timeago : live }}
+          </p>
+        </ng-container>
+
+        <ng-template #noGroupName>
+          <div class="flex justify-between items-center">
+            <p class="text-sm text-gray-600 italic">
+              Added: {{ item.addedAt | timeago : live }}
+            </p>
+            <button
+              *ngIf="checkRole"
+              type="button"
+              class="cursor-pointer text-xs text-accent flex items-center focus:outline-primary focus:outline-offset-1 focus:outline"
+              (click)="subtitleClick.emit(item)"
+            >
+              <mat-icon class="text-sm flex items-center justify-center w-4 h-4"
+                >visibility</mat-icon
+              >
+              View Details
+            </button>
+          </div>
+        </ng-template>
+      </li>
+    </ul>
+  </div>
+</ng-template> -->
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
